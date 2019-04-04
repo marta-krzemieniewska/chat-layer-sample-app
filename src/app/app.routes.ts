@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 
-// import { AuthGuardService } from './auth-guard.service';
+import { AuthGuardService } from './auth-guard.service';
 
 import { LoginComponent } from './login/login.component';
 import { ConversationsComponent } from './conversations/conversations.component';
@@ -24,11 +24,11 @@ export const AppRoutes: Routes = [
     {
         path: 'conversations',
         component: ConversationsComponent,
-        // canActivate: [AuthGuardService],
+        canActivate: [AuthGuardService],
         children: [ {
             path: ':id',
             component: ConversationComponent,
-            // canActivate: [AuthGuardService]
+            canActivate: [AuthGuardService]
         }]
     }
 ];

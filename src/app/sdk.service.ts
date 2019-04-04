@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { IAuthChallengeOptions, LogPersistences, OrphanedEventPersistences } from '@comapi/sdk-js-foundation';
-import { ComapiChatClient, ComapiChatConfig } from '@comapi/sdk-js-chat';
+import { IAuthChallengeOptions } from '@comapi/sdk-js-foundation';
+import { ComapiChatClient, ComapiChatConfig, MemoryConversationStore } from '@comapi/sdk-js-chat';
 import { AuthService } from './auth.service';
-// import { ConversationStore } from '???';
+import { Observable, from, of } from 'rxjs';
 import { AppSettings } from './app.settings';
 
 @Injectable({
@@ -11,13 +11,13 @@ import { AppSettings } from './app.settings';
 export class SdkService {
   private chatClient: ComapiChatClient;
   private config: ComapiChatConfig;
-  private convStore;
+  private store: MemoryConversationStore;
 
   constructor(private authService: AuthService) {
-
+    this.store = new MemoryConversationStore()
     // create / initialise ComapiChatConfig
     this.config = new ComapiChatConfig()
-      .withStore(this.convStore)
+      .withStore(this.store)
       .withApiSpace(AppSettings.API_SPACE_ID)
       .withUrlBase(AppSettings.URL_BASE)
       .withWebSocketBase(AppSettings.WEB_SOCKET)
@@ -31,12 +31,12 @@ export class SdkService {
   }
 
 
-  public initialise(): Promise<boolean> {
+  public initialise() {
     if (this.chatClient) {
-      return Promise.resolve(false);
+      return of(false);
     } else {
       this.chatClient = new ComapiChatClient();
-      return this.chatClient.initialise(this.config);
+      return from(this.chatClient.initialise(this.config));
     }
   }
 
@@ -47,6 +47,27 @@ export class SdkService {
         return true;
       });
   }
+
+  public getConversations() {
+    return from(this.store.getConversations());
+  }
+  public getMessages(conversationId: string) {
+    return from(this.store.getMessages(conversationId));
+  }
+
+  public async subscribeToEvent(event: string, cb: any) {
+
+    this.chatClient.on(event, cb);
+  }
+
+  public async unSubscribeToEvent(event: string) {
+
+    this.chatClient.off(event);
+  }
+  public sendTextMessage(conversationId: string, text: string) {
+    return from(this.chatClient.messaging.sendTextMessage(conversationId, text));
+  }
+
 
 
 }

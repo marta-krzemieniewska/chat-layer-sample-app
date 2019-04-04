@@ -8,10 +8,18 @@ import { SdkService } from '../sdk.service';
 })
 export class ConversationsComponent implements OnInit {
 
+  conversations: any;
+
   constructor(private sdk: SdkService) { }
 
   ngOnInit() {
-    this.sdk.initialise();
+    this.sdk.initialise().subscribe(() => {
+      this.sdk.getConversations()
+        .subscribe(conversations => {
+          this.conversations = conversations;
+        });
+    }
+    );
   }
 
 }
